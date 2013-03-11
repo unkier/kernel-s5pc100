@@ -36,6 +36,9 @@
 #include <linux/irq.h>
 #include <linux/slab.h>
 
+#include <linux/gpio.h>
+#include <plat/gpio-cfg.h>
+
 #include <asm/delay.h>
 #include <asm/irq.h>
 #include <asm/io.h>
@@ -143,12 +146,19 @@ typedef struct board_info {
 
 /* debug code */
 
+
 #define dm9000_dbg(db, lev, msg...) do {		\
 	if ((lev) < debug) {				\
 		dev_dbg(db->dev, msg);			\
 	}						\
 } while (0)
 
+/*
+define dm9000_dbg(db, lev, msg...) do {		\
+		printk ("dm9000: " ); \
+		printk (msg);			\
+} while (0)
+*/
 static inline board_info_t *to_dm9000_board(struct net_device *dev)
 {
 	return netdev_priv(dev);
@@ -927,14 +937,22 @@ dm9000_start_xmit(struct sk_buff *skb, struct net_device *dev)
 static void dm9000_tx_done(struct net_device *dev, board_info_t *db)
 {
 	int tx_status = ior(db, DM9000_NSR);	/* Got TX status */
+	
+	dm9000_dbg(db, 3, "%s: tx_status: %d\n", __func__, tx_status);
 
 	if (tx_status & (NSR_TX2END | NSR_TX1END)) {
+	  
+		dm9000_dbg(db, 3, "tx done success\n");
+		
 		/* One packet sent complete */
 		db->tx_pkt_cnt--;
 		dev->stats.tx_packets++;
 
 		if (netif_msg_tx_done(db))
+		{
 			dev_dbg(db->dev, "tx done, NSR %02x\n", tx_status);
+			dm9000_dbg(db, 3, "tx done very success\n");
+		}
 
 		/* Queue packet check & send */
 		if (db->tx_pkt_cnt > 0)
@@ -962,6 +980,8 @@ dm9000_rx(struct net_device *dev)
 	u8 rxbyte, *rdptr;
 	bool GoodPacket;
 	int RxLen;
+	
+	dm9000_dbg(db, 3, "%s:\n", __func__);
 
 	/* Check packet ready or not */
 	do {
@@ -969,6 +989,8 @@ dm9000_rx(struct net_device *dev)
 
 		/* Get most updated data */
 		rxbyte = readb(db->io_data);
+		
+		dm9000_dbg(db, 3, "rxbyte: %02x\n", rxbyte);
 
 		/* Status check: this byte must be 0 or 1 */
 		if (rxbyte & DM9000_PKT_ERR) {
@@ -1083,6 +1105,7 @@ static irqreturn_t dm9000_interrupt(int irq, void *dev_id)
 
 	if (netif_msg_intr(db))
 		dev_dbg(db->dev, "interrupt status %02x\n", int_status);
+	dm9000_dbg(db, 3, "interrupt status %02x\n", int_status);
 
 	/* Received the coming packet */
 	if (int_status & ISR_PRS)
@@ -1436,7 +1459,6 @@ dm9000_probe(struct platform_device *pdev)
 	}
 
 	db->io_addr = ioremap(db->addr_res->start, iosize);
-
 	if (db->io_addr == NULL) {
 		dev_err(db->dev, "failed to ioremap address reg\n");
 		ret = -EINVAL;

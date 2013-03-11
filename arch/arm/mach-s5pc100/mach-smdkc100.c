@@ -25,6 +25,9 @@
 #include <linux/input.h>
 #include <linux/pwm_backlight.h>
 
+#include <linux/dm9000.h>
+#include <linux/irq.h>
+
 #include <asm/hardware/vic.h>
 #include <asm/mach/arch.h>
 #include <asm/mach/map.h>
@@ -143,15 +146,24 @@ static struct s3c_fb_pd_win smdkc100_fb_win0 = {
 };
 
 static struct fb_videomode smdkc100_lcd_timing = {
-	.left_margin	= 8,
-	.right_margin	= 13,
-	.upper_margin	= 7,
-	.lower_margin	= 5,
-	.hsync_len	= 3,
-	.vsync_len	= 1,
+// 	.left_margin	= 8,
+// 	.right_margin	= 13,
+// 	.upper_margin	= 7,
+// 	.lower_margin	= 5,
+// 	.hsync_len	= 3,
+// 	.vsync_len	= 1,
+// 	.xres		= 800,
+// 	.yres		= 480,  
+// 	.refresh	= 80,
+	.left_margin	= 50,
+	.right_margin	= 2,
+	.upper_margin	= 10,
+	.lower_margin	= 2,
+	.hsync_len	= 1,
+	.vsync_len	= 2,
 	.xres		= 800,
-	.yres		= 480,
-	.refresh	= 80,
+	.yres		= 480,  
+	.refresh	= 60,
 };
 
 static struct s3c_fb_platdata smdkc100_lcd_pdata __initdata = {
@@ -185,6 +197,116 @@ static struct samsung_keypad_platdata smdkc100_keypad_data __initdata = {
 	.cols		= 8,
 };
 
+/* Network DM9000 */
+static struct resource dm9000_resources[] = {
+        [0] = {
+                .start  = 0x88000000,
+                .end    = 0x88000000 + 0x4 - 1,
+                .flags  = IORESOURCE_MEM,
+                },
+        [1] = {
+                .start  = 0x88000000 + 0x4,
+                .end    = 0x88000000 + 0x8 - 1,
+                .flags  = IORESOURCE_MEM,
+                },
+        [2] = {
+//                 .start = S5P_IRQ_VIC0(10),
+//                 .end   = S5P_IRQ_VIC0(10),
+		   .start = IRQ_EINT(10),
+		   .end = IRQ_EINT(10),
+                .flags  = IORESOURCE_IRQ | IRQ_TYPE_LEVEL_HIGH,
+                },
+};
+
+static struct dm9000_plat_data s5pc100_dm9000_platdata = {
+               .flags  = DM9000_PLATF_16BITONLY | DM9000_PLATF_NO_EEPROM,              
+               .dev_addr[0] = 0xF0,
+               .dev_addr[1] = 0xDE,
+               .dev_addr[2] = 0xF1,                           
+               .dev_addr[3] = 0x7E,
+               .dev_addr[4] = 0xFF,
+               .dev_addr[5] = 0x30,
+};
+
+static struct platform_device s3c_device_dm9ks = { 
+		.name   = "dm9000",
+		.id     = -1,
+		.num_resources  = ARRAY_SIZE(dm9000_resources),
+		.resource       = dm9000_resources,
+		.dev = {
+		  .platform_data = &s5pc100_dm9000_platdata,
+		 }
+};
+
+/* Bosch C_CAN */
+static struct resource bosch_c_can_resources[] = {
+	[0] = {
+		.start	= 0xec700000,
+		.end	= 0xec700000 + 256*2 - 1,
+		.flags	= IORESOURCE_MEM | IORESOURCE_MEM_32BIT,
+	      },
+	[1] = {
+		.start	= IRQ_IIC2,
+		.end	= IRQ_IIC2,
+		.flags	= IORESOURCE_IRQ,
+	      },
+};
+
+static struct platform_device bosch_c_can = {
+	.name	= "c_can_platform",
+	.id	= 0,
+	.num_resources	= ARRAY_SIZE(bosch_c_can_resources),
+	.resource	= bosch_c_can_resources,
+};
+
+static struct resource bosch_c_can_resources1[] = {
+	[0] = {
+		.start	= 0xec800000,
+		.end	= 0xec800000 + 256*2 - 1,
+		.flags	= IORESOURCE_MEM | IORESOURCE_MEM_32BIT,
+	      },
+	[1] = {
+		.start	= IRQ_IIC3,
+		.end	= IRQ_IIC3,
+		.flags	= IORESOURCE_IRQ,
+	      },
+};
+
+static struct platform_device bosch_c_can1 = {
+	.name	= "c_can_platform",
+	.id	= 1,
+	.num_resources	= ARRAY_SIZE(bosch_c_can_resources1),
+	.resource	= bosch_c_can_resources1,
+};
+
+/* GPIO Keys */
+#if defined(CONFIG_KEYBOARD_GPIO) || defined(CONFIG_KEYBOARD_GPIO_MODULE)
+#include <linux/gpio_keys.h>
+#include <mach/gpio.h>
+ 
+static struct gpio_keys_button smdkc100_gpio_keys_table[] = {
+	{KEY_F1, S5PC100_GPH0(1), 1, "gpio-keys: F1", EV_KEY, 0, 20},
+	{KEY_F2, S5PC100_GPH0(2), 1, "gpio-keys: F2", EV_KEY, 0, 20},
+	{KEY_F3, S5PC100_GPH0(3), 1, "gpio-keys: F3", EV_KEY, 0, 20},
+	{KEY_F4, S5PC100_GPH0(4), 1, "gpio-keys: F4", EV_KEY, 0, 20},
+// 	{KEY_5, S5PC100_GPH0(5), 1, "gpio-keys: 5", EV_KEY, 0, 20},
+// 	{KEY_6, S5PC100_GPH0(6), 1, "gpio-keys: 6", EV_KEY, 0, 20},
+};
+ 
+static struct gpio_keys_platform_data smdkc100_gpio_keys_data = {
+	.buttons        = smdkc100_gpio_keys_table,
+	.nbuttons       = ARRAY_SIZE(smdkc100_gpio_keys_table),
+};
+ 
+static struct platform_device smdkc100_device_gpiokeys = {
+	.name      = "gpio-keys",
+	.dev = {
+		.platform_data = &smdkc100_gpio_keys_data,
+	},
+};
+#endif
+
+
 static struct platform_device *smdkc100_devices[] __initdata = {
 	&s3c_device_adc,
 	&s3c_device_cfcon,
@@ -202,10 +324,16 @@ static struct platform_device *smdkc100_devices[] __initdata = {
 	&samsung_device_keypad,
 	&s5pc100_device_ac97,
 	&s3c_device_rtc,
+	&s3c_device_dm9ks,
+	&bosch_c_can,
+	&bosch_c_can1,
 	&s5p_device_fimc0,
 	&s5p_device_fimc1,
 	&s5p_device_fimc2,
 	&s5pc100_device_spdif,
+#if defined(CONFIG_KEYBOARD_GPIO) || defined(CONFIG_KEYBOARD_GPIO_MODULE)
+	&smdkc100_device_gpiokeys,
+#endif
 };
 
 /* LCD Backlight data */

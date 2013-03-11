@@ -624,8 +624,8 @@ static void c_can_chip_config(struct net_device *dev)
 
 static void c_can_start(struct net_device *dev)
 {
-	struct c_can_priv *priv = netdev_priv(dev);
-
+ 	struct c_can_priv *priv = netdev_priv(dev);
+	
 	/* basic c_can configuration */
 	c_can_chip_config(dev);
 
@@ -636,6 +636,7 @@ static void c_can_start(struct net_device *dev)
 
 	/* enable status change, error and module interrupts */
 	c_can_enable_all_interrupts(priv, ENABLE_ALL_INTERRUPTS);
+	
 }
 
 static void c_can_stop(struct net_device *dev)
@@ -689,7 +690,7 @@ static int c_can_get_berr_counter(const struct net_device *dev,
  * If we discover a not yet transmitted package, stop looking for more.
  */
 static void c_can_do_tx(struct net_device *dev)
-{
+{ 
 	u32 val;
 	u32 msg_obj_no;
 	struct c_can_priv *priv = netdev_priv(dev);
@@ -1035,7 +1036,7 @@ static irqreturn_t c_can_isr(int irq, void *dev_id)
 	irqstatus = priv->read_reg(priv, &priv->regs->interrupt);
 	if (!irqstatus)
 		return IRQ_NONE;
-
+	
 	/* disable all interrupts and schedule the NAPI */
 	c_can_enable_all_interrupts(priv, DISABLE_ALL_INTERRUPTS);
 	napi_schedule(&priv->napi);

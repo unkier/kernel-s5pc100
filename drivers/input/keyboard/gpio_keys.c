@@ -655,6 +655,7 @@ static int __devinit gpio_keys_probe(struct platform_device *pdev)
 	int wakeup = 0;
 
 	if (!pdata) {
+printk ("gpio-keys: bad pdata");
 		error = gpio_keys_get_devtree_pdata(dev, &alt_pdata);
 		if (error)
 			return error;
@@ -730,6 +731,8 @@ static int __devinit gpio_keys_probe(struct platform_device *pdev)
 	input_sync(input);
 
 	device_init_wakeup(&pdev->dev, wakeup);
+	
+printk ("gpio-keys: probe end without errors");
 
 	return 0;
 

@@ -11,6 +11,8 @@
 
 #include <plat/irqs.h>
 
+#define IRQ_EINT10		S5P_IRQ_VIC0(10)
+
 /* VIC0: system, DMA, timer */
 #define IRQ_EINT16_31		S5P_IRQ_VIC0(16)
 #define IRQ_BATF		S5P_IRQ_VIC0(17)

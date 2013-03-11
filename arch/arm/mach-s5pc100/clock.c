@@ -585,16 +585,28 @@ static struct clk init_clocks_off[] = {
 		.parent		= &clk_div_d1_bus.clk,
 		.enable		= s5pc100_d1_4_ctrl,
 		.ctrlbit	= (1 << 9),
+// 	}, {
+// 		.name		= "ccan",
+// 		.parent		= &clk_div_d1_bus.clk,
+// 		.enable		= s5pc100_d1_4_ctrl,
+// 		.ctrlbit	= (1 << 10),
+// 	}, {
+// 		.name		= "ccan",
+// 		.parent		= &clk_div_d1_bus.clk,
+// 		.enable		= s5pc100_d1_4_ctrl,
+// 		.ctrlbit	= (1 << 11),
+// 	}, {
+  	}, {
+		.name		= "ccan",
+		.parent		= &clk_div_pclkd1.clk,
+		.enable		= s5pc100_d1_4_ctrl,
+		.ctrlbit	= (1 << 10) | (1 << 11),
+	}, {
 	}, {
 		.name		= "ccan",
-		.parent		= &clk_div_d1_bus.clk,
+		.parent		= &clk_div_pclkd1.clk,
 		.enable		= s5pc100_d1_4_ctrl,
-		.ctrlbit	= (1 << 10),
-	}, {
-		.name		= "ccan",
-		.parent		= &clk_div_d1_bus.clk,
-		.enable		= s5pc100_d1_4_ctrl,
-		.ctrlbit	= (1 << 11),
+		.ctrlbit	= (1 << 10) | (1 << 11),
 	}, {
 		.name		= "hsitx",
 		.parent		= &clk_div_d1_bus.clk,

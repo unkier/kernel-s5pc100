@@ -33,6 +33,10 @@
 
 #include <linux/can/dev.h>
 
+#include <linux/gpio.h>
+#include <plat/gpio-cfg.h>
+
+
 #include "c_can.h"
 
 /*
@@ -59,6 +63,14 @@ static u16 c_can_plat_read_reg_aligned_to_32bit(struct c_can_priv *priv,
 	return readw(reg + (long)reg - (long)priv->regs);
 }
 
+static u16 c_can_plat_read_reg_aligned_to_32bit_double_read(struct c_can_priv *priv,
+						void *reg)
+{
+	u16 read = readw(reg + (long)reg - (long)priv->regs);
+	read = readw(reg + (long)reg - (long)priv->regs);
+	return read;
+}
+
 static void c_can_plat_write_reg_aligned_to_32bit(struct c_can_priv *priv,
 						void *reg, u16 val)
 {
@@ -73,11 +85,16 @@ static int __devinit c_can_plat_probe(struct platform_device *pdev)
 	struct c_can_priv *priv;
 	struct resource *mem;
 	int irq;
+	
+	s3c_gpio_cfgpin_range(S5PC100_GPH3(4), 4, S3C_GPIO_SFN(4));
+	
 #ifdef CONFIG_HAVE_CLK
 	struct clk *clk;
 
 	/* get the appropriate clk */
-	clk = clk_get(&pdev->dev, NULL);
+// 	clk = clk_get(&pdev->dev, NULL);
+	clk = clk_get(NULL, "ccan");
+	clk_enable(clk);
 	if (IS_ERR(clk)) {
 		dev_err(&pdev->dev, "no clock defined\n");
 		ret = -ENODEV;
@@ -124,8 +141,8 @@ static int __devinit c_can_plat_probe(struct platform_device *pdev)
 #endif
 
 	switch (mem->flags & IORESOURCE_MEM_TYPE_MASK) {
-	case IORESOURCE_MEM_32BIT:
-		priv->read_reg = c_can_plat_read_reg_aligned_to_32bit;
+	 case IORESOURCE_MEM_32BIT:
+		priv->read_reg = c_can_plat_read_reg_aligned_to_32bit_double_read;
 		priv->write_reg = c_can_plat_write_reg_aligned_to_32bit;
 		break;
 	case IORESOURCE_MEM_16BIT:

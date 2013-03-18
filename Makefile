@@ -4,6 +4,8 @@ SUBLEVEL = 0
 EXTRAVERSION = -rc7
 NAME = Saber-toothed Squirrel
 
+ARCH=arm
+
 # *DOCUMENTATION*
 # To see a list of typical targets execute "make help"
 # More info can be located in ./README

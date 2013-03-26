@@ -1104,6 +1104,23 @@ int wm9713_reset(struct snd_soc_codec *codec, int try_warm)
 	soc_ac97_ops.reset(codec->ac97);
 	if (soc_ac97_ops.warm_reset)
 		soc_ac97_ops.warm_reset(codec->ac97);
+	
+	
+	// .! Вот сюда.
+			// Прочитаем всё
+	printk(KERN_ERR " ^(o,o)^ \n");
+	u16 i;
+// 	for (i = 0; i <= 0x7E; i ++)
+	for (i = 0; i < ARRAY_SIZE(wm9713_reg); i ++)
+	{
+	    u16 reg = soc_ac97_ops.read(codec->ac97, i);
+// 	    if (i < ARRAY_SIZE(wm9713_reg))
+// 	      wm9713_reg[i] = reg;
+	    printk(KERN_ERR "0x%04x, // %02x", reg, i);
+	}
+	
+	
+	
 	if (ac97_read(codec, 0) != wm9713_reg[0])
 		return -EIO;
 	return 0;
@@ -1209,6 +1226,7 @@ static int wm9713_soc_probe(struct snd_soc_codec *codec)
 		printk(KERN_ERR "Failed to reset WM9713: AC97 link error\n");
 		goto reset_err;
 	}
+	
 
 	wm9713_set_bias_level(codec, SND_SOC_BIAS_STANDBY);
 

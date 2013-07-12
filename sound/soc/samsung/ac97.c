@@ -275,7 +275,8 @@ static int s3c_ac97_trigger(struct snd_pcm_substream *substream, int cmd,
 	if (!dma_data->ops)
 		dma_data->ops = samsung_dma_get_ops();
 
-	dma_data->ops->started(dma_data->channel);
+	if ( dma_data->ops->started)
+		dma_data->ops->started(dma_data->channel);
 
 	return 0;
 }

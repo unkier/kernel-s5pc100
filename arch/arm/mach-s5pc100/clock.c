@@ -1302,7 +1302,7 @@ static struct clk init_clocks[] = {
 		.ctrlbit	= (1 << 3),
 	}, {
 		.name		= "timers",
-		.parent		= &clk_div_d1_bus.clk,
+		.parent		= &clk_div_pclkd1.clk,
 		.enable		= s5pc100_d1_3_ctrl,
 		.ctrlbit	= (1 << 6),
 	},

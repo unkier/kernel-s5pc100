@@ -136,7 +136,7 @@ static int __devinit c_can_plat_probe(struct platform_device *pdev)
 	dev->irq = irq;
 	priv->regs = addr;
 #ifdef CONFIG_HAVE_CLK
-	priv->can.clock.freq = clk_get_rate(clk);
+	priv->can.clock.freq = clk_get_rate(clk) / 4; // C_CAN with APB2 uses clock divider 4.
 	priv->priv = clk;
 #endif
 

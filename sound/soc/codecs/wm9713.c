@@ -19,6 +19,7 @@
 #include <linux/slab.h>
 #include <linux/module.h>
 #include <linux/device.h>
+#include <linux/delay.h>
 #include <sound/core.h>
 #include <sound/pcm.h>
 #include <sound/ac97_codec.h>
@@ -43,23 +44,73 @@ static int ac97_write(struct snd_soc_codec *codec,
  * Reg 0x3c bit 15 is used by touch driver.
  */
 static const u16 wm9713_reg[] = {
-	0x6174, 0x8080, 0x8080, 0x8080,
-	0xc880, 0xe808, 0xe808, 0x0808,
-	0x00da, 0x8000, 0xd600, 0xaaa0,
-	0xaaa0, 0xaaa0, 0x0000, 0x0000,
-	0x0f0f, 0x0040, 0x0000, 0x7f00,
-	0x0405, 0x0410, 0xbb80, 0xbb80,
-	0x0000, 0xbb80, 0x0000, 0x4523,
-	0x0000, 0x2000, 0x7eff, 0xffff,
-	0x0000, 0x0000, 0x0080, 0x0000,
-	0x0000, 0x0000, 0xfffe, 0xffff,
-	0x0000, 0x0000, 0x0000, 0xfffe,
-	0x4000, 0x0000, 0x0000, 0x0000,
-	0xb032, 0x3e00, 0x0000, 0x0000,
-	0x0000, 0x0000, 0x0000, 0x0000,
-	0x0000, 0x0000, 0x0000, 0x0006,
-	0x0001, 0x0000, 0x574d, 0x4c13,
-	0x0000, 0x0000, 0x0000
+  0x6150, // 00
+  0x0000, // 01
+  0x8000, // 02
+  0x8000, // 03
+  0x8000, // 04
+  0x8000, // 05
+  0x8000, // 06
+  0x8000, // 07
+  0x0000, // 08
+  0x0000, // 09
+  0x8000, // 0a
+  0x8000, // 0b
+  0x8008, // 0c
+  0x8008, // 0d
+  0x8008, // 0e
+  0x8008, // 0f
+  0x8808, // 10
+  0x8808, // 11
+  0x8808, // 12
+  0x8808, // 13
+  0x8808, // 14
+  0x8808, // 15
+  0x8808, // 16
+  0x8808, // 17
+  0x8808, // 18
+  0x8808, // 19
+  0x0000, // 1a
+  0x0000, // 1b
+  0x8000, // 1c
+  0x8000, // 1d
+  0x0000, // 1e
+  0x0000, // 1f
+  0x0000, // 20
+  0x0000, // 21
+  0x0000, // 22
+  0x0000, // 23
+  0x0000, // 24
+  0x0000, // 25
+  0x000f, // 26
+  0x0000, // 27
+  0x0001, // 28
+  0x0000, // 29
+  0x0000, // 2a
+  0x0000, // 2b
+  0xbb80, // 2c
+  0x0000, // 2d
+  0x0000, // 2e
+  0x0000, // 2f
+  0x0000, // 30
+  0x0000, // 31
+  0xbb80, // 32
+  0x0000, // 33
+  0x0000, // 34
+  0x0000, // 35
+  0x0000, // 36
+  0x0000, // 37
+  0x0000, // 38
+  0x0000, // 39
+  0x0000, // 3a
+  0x0000, // 3b
+  0x0000, // 3c
+  0x0000, // 3d
+  0x0000, // 3e
+  0x0000, // 3f
+  0x0000, // 40
+  0x0000, // 41
+  0x0000  // 42
 };
 
 /* virtual HP mixers regs */
@@ -644,6 +695,15 @@ static const struct snd_soc_dapm_route wm9713_audio_map[] = {
 	{"Capture Mono Mux", "Right", "Right Capture Source"},
 };
 
+static ac97_do_good (struct snd_soc_codec *codec)
+{
+  soc_ac97_ops.write(codec->ac97, AC97_MASTER, 0); // MASTER
+  soc_ac97_ops.write(codec->ac97, AC97_HEADPHONE, 0); // HEADPHONE
+  soc_ac97_ops.write(codec->ac97, AC97_MASTER_MONO, 0); // MONO
+  soc_ac97_ops.write(codec->ac97, AC97_PCM, 0); // PCM OUT
+  //soc_ac97_ops.write(codec->ac97, 0x72, 0); // FRONT MIXER
+}
+
 static unsigned int ac97_read(struct snd_soc_codec *codec,
 	unsigned int reg)
 {
@@ -672,6 +732,8 @@ static int ac97_write(struct snd_soc_codec *codec, unsigned int reg,
 	reg = reg >> 1;
 	if (reg < (ARRAY_SIZE(wm9713_reg)))
 		cache[reg] = val;
+	
+	ac97_do_good (codec);
 
 	return 0;
 }
@@ -1104,6 +1166,10 @@ int wm9713_reset(struct snd_soc_codec *codec, int try_warm)
 	soc_ac97_ops.reset(codec->ac97);
 	if (soc_ac97_ops.warm_reset)
 		soc_ac97_ops.warm_reset(codec->ac97);
+	
+	// Задержка, каким-то образом необходимая для запуска SD-карты	
+	mdelay (100);
+	
 	if (ac97_read(codec, 0) != wm9713_reg[0])
 		return -EIO;
 	return 0;

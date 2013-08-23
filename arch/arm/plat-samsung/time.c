@@ -210,8 +210,6 @@ static void s3c2410_timer_setup (void)
 	tcfg1 = __raw_readl(S3C2410_TCFG1);
 
 	/* timers reload after counting zero, so reduce the count by 1 */
-
-	tcnt /= 2;
 	tcnt--;
 
 	printk(KERN_DEBUG "timer tcon=%08lx, tcnt %04lx, tcfg %08lx,%08lx, usec %08lx\n",

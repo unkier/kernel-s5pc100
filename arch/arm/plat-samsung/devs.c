@@ -991,17 +991,35 @@ struct platform_device s5p_device_mipi_csis1 = {
 
 /* NAND */
 
-#ifdef CONFIG_S3C_DEV_NAND
+//#ifdef CONFIG_S3C_DEV_NAND
+//static struct resource s3c_nand_resource[] = {
+//	[0] = DEFINE_RES_MEM(S3C_PA_NAND, SZ_1M),
+//	[0] = DEFINE_RES_MEM(0x70200000, SZ_1M),
+//};
+//
+//struct platform_device s3c_device_nand = {
+//	.name		= "s3c2410-nand",
+// 	.id		= -1,
+// 	.num_resources	= ARRAY_SIZE(s3c_nand_resource),
+// 	.resource	= s3c_nand_resource,
+// };
+
 static struct resource s3c_nand_resource[] = {
-	[0] = DEFINE_RES_MEM(S3C_PA_NAND, SZ_1M),
+        [0] = {
+                .start = 0xE7200000,
+                .end   = 0xE7200000 + SZ_1M - 1,
+                .flags = IORESOURCE_MEM,
+        }
 };
 
 struct platform_device s3c_device_nand = {
-	.name		= "s3c2410-nand",
-	.id		= -1,
-	.num_resources	= ARRAY_SIZE(s3c_nand_resource),
-	.resource	= s3c_nand_resource,
+        .name             = "s3c-nand",
+        .id               = -1,
+        .num_resources    = ARRAY_SIZE(s3c_nand_resource),
+        .resource         = s3c_nand_resource,
 };
+
+EXPORT_SYMBOL(s3c_device_nand);
 
 /*
  * s3c_nand_copy_set() - copy nand set data
@@ -1092,7 +1110,7 @@ void __init s3c_nand_set_platdata(struct s3c2410_platform_nand *nand)
 		}
 	}
 }
-#endif /* CONFIG_S3C_DEV_NAND */
+//#endif /* CONFIG_S3C_DEV_NAND */
 
 /* ONENAND */
 

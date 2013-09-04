@@ -1305,7 +1305,13 @@ static struct clk init_clocks[] = {
 		.parent		= &clk_div_pclkd1.clk,
 		.enable		= s5pc100_d1_3_ctrl,
 		.ctrlbit	= (1 << 6),
-	},
+	}, {
+		.name		= "nand",
+		.id		= -1,             // ??
+		.parent		= &clk_div_d0_bus.clk,
+		.enable		= s5pc100_d0_1_ctrl,
+		.ctrlbit	= (1 << 3),
+	}, 
 };
 
 static struct clk *clks[] __initdata = {

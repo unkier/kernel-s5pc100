@@ -43,6 +43,13 @@
 #include <plat/regs-serial.h>
 #include <plat/gpio-cfg.h>
 
+#include <plat/nand.h>
+//#include <plat/partition.h>
+#include <linux/mtd/mtd.h>
+#include <linux/mtd/nand.h>
+#include <linux/mtd/nand_ecc.h>
+#include <linux/mtd/partitions.h>
+
 #include <plat/clock.h>
 #include <plat/devs.h>
 #include <plat/cpu.h>
@@ -307,6 +314,51 @@ static struct platform_device smdkc100_device_gpiokeys = {
 #endif
 
 
+/* NAND Flash */
+
+static struct mtd_partition smdkc100_default_nand_part[] __initdata = {
+	[0] = {
+		.name	= "u-boot",
+		.size	= SZ_256K,
+		.offset	= 0,
+	},
+	[1] = {
+		.name	= "u-boot-env",
+		.size	= SZ_128K,
+		.offset	= SZ_256K,
+	},
+	[2] = {
+		.name	= "kernel",
+		/* 5 megabytes, for a kernel with no modules
+		 * or a uImage with a ramdisk attached */
+		.size	= 0x02800000,
+		.offset	= SZ_256K + SZ_128K,
+	},
+	[3] = {
+		.name	= "root",
+		.offset	= 0x03000000,
+		.size	= MTDPART_SIZ_FULL,
+	},
+};
+
+static struct s3c_nand_mtd_info smdkc100_nand_sets[] __initdata = {
+	[0] = {
+		.chip_nr	= 1,
+		.mtd_part_nr = ARRAY_SIZE(smdkc100_default_nand_part),
+		.partition = smdkc100_default_nand_part,
+	},
+};
+
+// static struct s3c2410_platform_nand smdkc100_nand_info __initdata = {
+// 	.tacls		= 0,
+// 	.twrph0		= 25,
+// 	.twrph1		= 15,
+// 	.nr_sets	= ARRAY_SIZE(smdkc100_nand_sets),
+// 	.sets		= smdkc100_nand_sets,
+// 	.ignore_unset_ecc = 1,
+// };
+
+
 static struct platform_device *smdkc100_devices[] __initdata = {
 	&s3c_device_adc,
 	&s3c_device_cfcon,
@@ -327,6 +379,7 @@ static struct platform_device *smdkc100_devices[] __initdata = {
 	&s3c_device_dm9ks,
 	&bosch_c_can,
 	&bosch_c_can1,
+	&s3c_device_nand,
 	&s5p_device_fimc0,
 	&s5p_device_fimc1,
 	&s5p_device_fimc2,
@@ -348,6 +401,7 @@ static struct platform_pwm_backlight_data smdkc100_bl_data = {
 
 static void __init smdkc100_map_io(void)
 {
+	s3c_device_nand.name = "s5pc100-nand";
 	s5pc100_init_io(NULL, 0);
 	s3c24xx_init_clocks(12000000);
 	s3c24xx_init_uarts(smdkc100_uartcfgs, ARRAY_SIZE(smdkc100_uartcfgs));
@@ -375,6 +429,10 @@ static void __init smdkc100_machine_init(void)
 	smdkc100_lcd_power_set(&smdkc100_lcd_power_data, 0);
 
 	samsung_bl_set(&smdkc100_bl_gpio_info, &smdkc100_bl_data);
+	
+	// NAND
+	//s3c_nand_set_platdata(&smdkc100_nand_info);
+	s3c_device_nand.dev.platform_data = &smdkc100_nand_sets;
 
 	platform_add_devices(smdkc100_devices, ARRAY_SIZE(smdkc100_devices));
 }

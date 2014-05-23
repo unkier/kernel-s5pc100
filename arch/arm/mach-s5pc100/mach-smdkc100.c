@@ -208,12 +208,12 @@ static struct samsung_keypad_platdata smdkc100_keypad_data __initdata = {
 static struct resource dm9000_resources[] = {
         [0] = {
                 .start  = 0x88000000,
-                .end    = 0x88000000 + 0x4 - 1,
+                .end    = 0x88000003,
                 .flags  = IORESOURCE_MEM,
                 },
-        [1] = {
-                .start  = 0x88000000 + 0x4,
-                .end    = 0x88000000 + 0x8 - 1,
+	[1] = {
+                .start  = 0x88000004,
+                .end    = 0x88000007,
                 .flags  = IORESOURCE_MEM,
                 },
         [2] = {
@@ -221,7 +221,7 @@ static struct resource dm9000_resources[] = {
 //                 .end   = S5P_IRQ_VIC0(10),
 		   .start = IRQ_EINT(10),
 		   .end = IRQ_EINT(10),
-                .flags  = IORESOURCE_IRQ | IRQ_TYPE_LEVEL_HIGH,
+                .flags  = IORESOURCE_IRQ | IRQ_TYPE_EDGE_RISING,
                 },
 };
 
@@ -232,7 +232,7 @@ static struct dm9000_plat_data s5pc100_dm9000_platdata = {
                .dev_addr[2] = 0xF1,                           
                .dev_addr[3] = 0x7E,
                .dev_addr[4] = 0xFF,
-               .dev_addr[5] = 0x30,
+               .dev_addr[5] = 0xAA,
 };
 
 static struct platform_device s3c_device_dm9ks = { 

@@ -1447,6 +1447,23 @@ dm9000_probe(struct platform_device *pdev)
 			}
 		}
 	}
+	
+	// SMC
+	// request resources
+	u32 *_req;
+	_req = request_mem_region(0xE7000000, 4, pdev->name);
+	u32 *_adr;
+	_adr = ioremap(0xE7000000, 4);
+	// set flags
+	u32 _dat;
+	_dat = readl(_adr);
+	_dat = _dat | 0x30; // Memory Bank 1 width = 16, byte address
+ 	writel(_dat, _adr);
+	dev_info(db->dev, "SMC Control register is: 0x%08x;\n", _dat);
+	// release resources
+	iounmap(_adr);
+	release_resource(_req);
+	kfree(_req);
 
 	iosize = resource_size(db->addr_res);
 	db->addr_req = request_mem_region(db->addr_res->start, iosize,

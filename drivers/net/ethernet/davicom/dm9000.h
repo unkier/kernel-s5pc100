@@ -53,6 +53,7 @@
 #define CHIPR_DM9000B	       0x1A
 
 #define DM9000_MRCMDX          0xF0
+#define DM9000_MRCMDX1         0xF1
 #define DM9000_MRCMD           0xF2
 #define DM9000_MRRL            0xF4
 #define DM9000_MRRH            0xF5

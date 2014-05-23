@@ -430,6 +430,23 @@ static void __init smdkc100_machine_init(void)
 
 	samsung_bl_set(&smdkc100_bl_gpio_info, &smdkc100_bl_data);
 	
+	// SMC
+	// request resources
+	struct resource *_req;
+	_req = request_mem_region(0xE7000000, 4, "S5PC100");
+	u32 *_adr;
+	_adr = ioremap(0xE7000000, 4);
+	// set flags
+	u32 _dat;
+	_dat = readl(_adr);
+	_dat = _dat | 0x30; // Memory Bank 1 width = 16, byte address
+ 	writel(_dat, _adr);
+// 	dev_info(db->dev, "SMC Control register is: 0x%08x;\n", _dat);
+	// release resources
+	iounmap(_adr);
+	release_resource(_req);
+	kfree(_req);
+	
 	// NAND
 	//s3c_nand_set_platdata(&smdkc100_nand_info);
 	s3c_device_nand.dev.platform_data = &smdkc100_nand_sets;

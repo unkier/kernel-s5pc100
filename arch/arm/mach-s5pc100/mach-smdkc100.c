@@ -124,13 +124,14 @@ static void smdkc100_lcd_power_set(struct plat_lcd_data *pd,
 				   unsigned int power)
 {
 	if (power) {
-		/* module reset */
-		gpio_direction_output(S5PC100_GPH0(6), 1);
-		mdelay(100);
-		gpio_direction_output(S5PC100_GPH0(6), 0);
-		mdelay(10);
-		gpio_direction_output(S5PC100_GPH0(6), 1);
-		mdelay(10);
+		// ~~~~~~~~~~~~~~~~~ USED FOR TRAFFICLIGHT ~~~~~~~~~~~~~~~~~~~~
+		// /* module reset */
+		// gpio_direction_output(S5PC100_GPH0(6), 1);
+		// mdelay(100);
+		// gpio_direction_output(S5PC100_GPH0(6), 0);
+		// mdelay(10);
+		// gpio_direction_output(S5PC100_GPH0(6), 1);
+		// mdelay(10);
 	}
 }
 
@@ -425,7 +426,7 @@ static void __init smdkc100_machine_init(void)
 	s5pc100_spdif_setup_gpio(S5PC100_SPDIF_GPD);
 
 	/* LCD init */
-	gpio_request(S5PC100_GPH0(6), "GPH0");
+	//gpio_request(S5PC100_GPH0(6), "GPH0"); // ~~~~ USED FOR TRAFFICLIGHT ~~~~
 	smdkc100_lcd_power_set(&smdkc100_lcd_power_data, 0);
 
 	samsung_bl_set(&smdkc100_bl_gpio_info, &smdkc100_bl_data);
